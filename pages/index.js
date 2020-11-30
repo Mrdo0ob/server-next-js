@@ -33,7 +33,7 @@ const Index = (res = null) => {
     //Загрузить все запросы. Добавлено в связи с реализацией БД на MongoDB, там сложности с разграничением доступа.
     //Для доступа, пришлось бы высылать каждому пользователю приглашение в проект. Поэтому принял решение
     //Сделать данную функцию, которая возвращает все значения из БД
-    const handeLoadAll = async () => {
+    const handleLoadAll = async () => {
         event.preventDefault();
         res = await makeCallApi(`/all`);
         setInfo(res);
@@ -51,7 +51,7 @@ const Index = (res = null) => {
                 <input type="submit" value="Запросить"/>
             </form>
             {/*Для загрузки данных с БД*/}
-            <button onClick={handeLoadAll}>Загрузить все запросы</button>
+            <button onClick={handleLoadAll}>Загрузить все запросы</button>
             <pre suppressHydrationWarning={true}>{JSON.stringify(info, null, 2)}</pre>
         </>
     )
