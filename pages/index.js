@@ -1,65 +1,66 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import {useEffect, useState} from 'react';
+import makeCallApi from "../helpers/makeCallApi";
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+const Index = (res = null) => {
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+    const [info, setInfo] = useState(res);
+    const [inputValue, setInputValue] = useState('');
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+    useEffect(() => {
+        async function load() {
+            if (!res) {
+                res = await makeCallApi();
+            }
+            setInfo(res);
+        }
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+        load();
+    }, []);
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+    //При вводе в Input
+    const handleInputChange = (event) => {
+        setInputValue(event.target.value);
+    };
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+    //OnSubmit
+    const handleSubmit = async () => {
+        event.preventDefault();
+        res = await makeCallApi(`?address=${inputValue}`, 'POST');
+        setInfo(res);
+    };
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
-}
+    //Загрузить все запросы. Добавлено в связи с реализацией БД на MongoDB, там сложности с разграничением доступа.
+    //Для доступа, пришлось бы высылать каждому пользователю приглашение в проект. Поэтому принял решение
+    //Сделать данную функцию, которая возвращает все значения из БД
+    const handeLoadAll = async () => {
+        event.preventDefault();
+        res = await makeCallApi(`/all`);
+        setInfo(res);
+    };
+
+    if (!info) return <h2>Loading...</h2>;
+
+    return (
+        <>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Адрес:
+                    <input type="text" value={inputValue} onChange={handleInputChange}/>
+                </label>
+                <input type="submit" value="Запросить"/>
+            </form>
+            {/*Для загрузки данных с БД*/}
+            <button onClick={handeLoadAll}>Загрузить все запросы</button>
+            <pre suppressHydrationWarning={true}>{JSON.stringify(info, null, 2)}</pre>
+        </>
+    )
+};
+
+//**?
+Index.getInitialProps = async () => {
+    const res = await makeCallApi();
+    return res;
+};
+
+export default Index;
